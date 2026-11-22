@@ -82,8 +82,27 @@ def test_exploit [service: string, exploit: string] {
 	let teamInfo = $data | get services | transpose num info | where info.name == "simplest" | first | get info.teams."1";
 	let ip = $teamInfo.ip;
 	let flagid = $teamInfo.flagids | get $"($tick)";
-	let output = (^$exploit $ip $flagid) | complete; 
-
+	let res = (^$exploit $ip $flagid) | complete; 
+	mut message = ""; 
+	if $res.exit_code != 0 {
+		$message = $"FAIL with ($res.exit_code)" 
+	} else {
+		$message = $"OK with " 
+		let flag = $res.stdout | parse -r ("(" + $flag_format + ")") | get capture0.0?
+		if $flag == null {
+			$message += "no flag"
+		} else {
+			$message += "flag=" + $flag 
+		}
+	}
+	print $message 
+	print "program output: "
+	print "---stdout begin---" 
+	print $res.stdout 
+	print "---stdout end---"
+	print "---stderr begin---"
+	print $res.stderr
+	print "---stderr end---"
 }
 
 def view_logs [target: string] {
