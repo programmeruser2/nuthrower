@@ -77,9 +77,21 @@ def remove_exploit [service: string] {
 }
 
 def test_exploit [service: string, exploit: string] {
+	let data = http get ($url + "/api/flagids")
+	let tick = $data.tick;
+	let teamInfo = $data | get services | transpose num info | where info.name == "simplest" | first | get info.teams."1";
+	let ip = $teamInfo.ip;
+	let flagid = $teamInfo.flagids | get $"($tick)";
+	let output = (^$exploit $ip $flagid) | complete; 
+
 }
 
 def view_logs [target: string] {
+	if target == null {
+		less ($dir | path join logs nuthrower.log)
+	} else {
+		less ($dir | path join logs $"($target).log")
+	}
 }
 
 # Thrower written in nu-shell
