@@ -11,6 +11,7 @@ def attack [tick: int, service: string, team: string, ip: string, flagtick: stri
   let exploit = $dir | path join "exploits" $service
   if ($exploit | path exists) and (ls -l $exploit | get 0.mode | str contains "x") {
     let res = (^$exploit $ip $flagid | complete)
+		let logname = $"(date now|format date)_tick_($tick)-service_($service)-team_($team)-ip_($ip)-ft_($flagtick)-id_($flagid)"
     mut message = ""
     if $res.exit_code != 0 {
       $message = $"FAIL with ($res.exit_code)" 
