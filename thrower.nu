@@ -11,25 +11,25 @@ def attack [tick: int, service: string, team: string, ip: string, flagtick: stri
     let logname = $"tick_($tick)-service_($service)-team_($team)-ip_($ip)-ft_($flagtick)-id_($flagid)"
     mut message = ""
     if $res.exit_code != 0 {
-      $message = $"fail tick ($logname)" 
+      $message = $"FAIL with ($res.exit_code)" 
     } else {
-      $message = $"ok tick ($logname)" 
+      $message = $"OK with " 
       let flag = $res.stdout | parse -r ("(" + $flag_format + ")") | get capture0.0?
       if $flag == null {
-        $message += " no flag"
+        $message += "no flag"
       } else {
         $message += "flag=" + $flag + " "
 				let submitRes = ({flags:[$flag]} | http post -t application/json ($url + "/api/submit")).flags|transpose flag code|first|get code
 				$message += $"code=($submitRes.code) status=($submitRes.status)"
       }
     }
-    $message += "\n"
-    $message | save --append ($dir | path join "logs" "nuthrower.log")
+		log info $"Exploit for ($service) executed ($message)|" --context { tick: $tick, service: $service, team: $team, ip: $ip, flag_tick: $flagtick, flagid: $flagid } 
     ($"---stdout ($logname)---\n" + $res.stdout + $"\n---stderr ($logname)---\n" + $res.stderr + "\n---end ($logname)---\n") | save --append ($dir | path join "logs" $"($service).log")
   }
 }
 def run_attacks [] {
 	let flagids = (http get $"($url)/api/flagids")
+	log info $"tick ($flagids.tick)"
 	let services = $flagids.services
 	for service in ($services | transpose num info) {
 		for team in ($service.info.teams | transpose num info) {
@@ -50,10 +50,9 @@ def run_attacks [] {
 mkdir $dir
 mkdir ($dir | path join exploits)
 mkdir ($dir|path join logs)
-touch ~/.nuthrower/logs/nuthrower.log
-print $"tick len ($tick_len)" 
-print "starting thrower, check ~/.nuthrower/logs for logs"
-print "add exploits to ~/.nuthrower/exploits/SERVICE (must be executable)"
+log info $"tick len ($tick_len)" 
+log info "starting thrower, check ~/.nuthrower/logs for logs"
+log info "add exploits to ~/.nuthrower/exploits/SERVICE (must be executable)"
 loop { 
 	run_attacks
 	sleep ($tick_len * 1sec)
