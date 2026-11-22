@@ -6,6 +6,9 @@ let flag_format = $info.flag_format
 let tick_len = $info.tick_len
 let dir = $nu.home-dir | path join ".nuthrower"
 let ownIp = (cat /etc/glitch/team.json|from json).ip
+mkdir $dir
+mkdir ($dir | path join exploits)
+mkdir ($dir | path join logs)
 
 def attack [tick: int, service: string, team: string, ip: string, flagtick: string, flagid: string] {
   let exploit = $dir | path join "exploits" $service
@@ -26,6 +29,7 @@ def attack [tick: int, service: string, team: string, ip: string, flagtick: stri
 				$message += $"code=($submitRes.code) status=($submitRes.status)"
       }
     }
+		let logname = $logname + $"-exitcode_($res.exit_code)"
 		log info $"Exploit for ($service) executed ($message) |" --context { tick: $tick, service: $service, team: $team, ip: $ip, flag_tick: $flagtick, flagid: $flagid } 
     ($"---stdout ($logname)---\n" + $res.stdout + $"\n---stderr ($logname)---\n" + $res.stderr + "\n---end ($logname)---\n") | save --append ($dir | path join "logs" $"($service).log")
   }
@@ -59,23 +63,29 @@ def start_thrower [] {
 		sleep ($tick_len * 1sec)
 	}
 }
-def throw [service: string, file: string] {
+def import_exploit [service: string, file: string] {
 	let dest = ($dir | path join $dir exploits $service)
 	cp $file $dest
 	chmod +x $dest 
 	print $"Successfully threw exploit ($file) for ($service) to ($dest)"
 }
-def main [action: string, arg1?: string, arg2?: string] {
-	mkdir $dir
-	mkdir ($dir | path join exploits)
-	mkdir ($dir | path join logs)
-	match $action {
-		"run" => { start_thrower }
-		"throw" => { throw $arg1 $arg2 }
-		_ => {
-			print "Usage:"
-			print "thrower run -> starts thrower"
-			print "thrower throw [service] [exploit file] -> adds exploit file to thrower"
-		}
-	}
+
+# Thrower written in nu-shell
+# Run a subcommand with --help to see specific options
+def main [] {
+	help main
 }
+
+# Run the thrower 
+def "main run" [] {
+	start_thrower 
+}
+
+# Import an exploit script into the thrower (overwrites existing scripts) 
+def "main import" [
+	service: string, # The service the exploit is for
+	file: string # The file that contains the exploit 
+] {
+	import_exploit $service $file 
+}
+
