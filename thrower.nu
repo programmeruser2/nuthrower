@@ -79,6 +79,7 @@ def remove_exploit [service: string] {
 def test_exploit [service: string, exploit: string] {
 	let data = http get ($url + "/api/flagids")
 	let tick = $data.tick;
+	# This assumes that the NOP team is the first team, change if needed 
 	let teamInfo = $data | get services | transpose num info | where info.name == "simplest" | first | get info.teams."1";
 	let ip = $teamInfo.ip;
 	let flagid = $teamInfo.flagids | get $"($tick)";
@@ -149,8 +150,8 @@ def "main rm" [
 
 # Test an exploit wtih the NOP team 
 def "main test" [ 
-	service: string, 
-	exploit: string
+	service: string, # The service you want to test with  
+	exploit: string # The exploit file (ensure it is executable)
 ] {
 	test_exploit $service $exploit 
 }
