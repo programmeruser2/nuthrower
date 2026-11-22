@@ -1,4 +1,4 @@
-let url = "https://intro.glitch.ad"
+let url = "https://glitch.ad"
 let info = (http get ($url + "/api/info"))
 let flag_format = $info.flag_format
 let tick_len = $info.tick_len
