@@ -3,6 +3,7 @@ let info = (http get ($url + "/api/info"))
 let flag_format = $info.flag_format
 let tick_len = $info.tick_len
 let dir = $nu.home-dir | path join ".nuthrower"
+let ownIp = (cat /etc/glitch/team.json|from json).ip
 def attack [tick: int, service: string, team: string, ip: string, flagtick: string, flagid: string] {
   let exploit = $dir | path join "exploits" $service
   if ($exploit | path exists) and (ls -l $exploit | get 0.mode | str contains "x") {
@@ -35,6 +36,9 @@ def run_attacks [] {
 			let name = $service.info.name 
 			let teamName = $team.info.name
 			let ip = $team.info.ip 
+			if $ip == $ownIp {
+				continue
+			}
 			let flags = $team.info.flagids
 			for flag in ($flags | transpose num id) {
 				job spawn { attack $flagids.tick $name $teamName $ip $flag.num $flag.id }
