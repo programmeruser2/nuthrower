@@ -65,7 +65,7 @@ def throw [service: string, file: string] {
 	chmod +x $dest 
 	print $"Successfully threw exploit ($file) for ($service) to ($dest)"
 }
-def main[action: string, arg1?: string, arg2?: string] {
+def main [action: string, arg1?: string, arg2?: string] {
 	mkdir $dir
 	mkdir ($dir | path join exploits)
 	mkdir ($dir | path join logs)
