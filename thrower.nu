@@ -44,4 +44,10 @@ mkdir -p ~/nuthrower
 mkdir -p ~/nuthrower/exploits
 mkdir -p ~/nuthrower/logs
 touch ~/nuthrower/logs/nuthrower.log 
-job spawn { run_attacks; sleep $tick_len * 1sec }
+print "starting thrower, check ~/nuthrower/logs for logs"
+print "add exploits to ~/nuthrower/exploits/SERVICE (must be executable)"
+loop { 
+	run_attacks
+	sleep $tick_len * 1sec 
+}
+
