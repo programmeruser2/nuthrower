@@ -1,15 +1,16 @@
 use std/log
+
 let url = "https://glitch.ad"
 let info = (http get ($url + "/api/info"))
 let flag_format = $info.flag_format
 let tick_len = $info.tick_len
 let dir = $nu.home-dir | path join ".nuthrower"
 let ownIp = (cat /etc/glitch/team.json|from json).ip
+
 def attack [tick: int, service: string, team: string, ip: string, flagtick: string, flagid: string] {
   let exploit = $dir | path join "exploits" $service
   if ($exploit | path exists) and (ls -l $exploit | get 0.mode | str contains "x") {
     let res = (^$exploit $ip $flagid | complete)
-    let logname = $"tick_($tick)-service_($service)-team_($team)-ip_($ip)-ft_($flagtick)-id_($flagid)"
     mut message = ""
     if $res.exit_code != 0 {
       $message = $"FAIL with ($res.exit_code)" 
@@ -24,7 +25,7 @@ def attack [tick: int, service: string, team: string, ip: string, flagtick: stri
 				$message += $"code=($submitRes.code) status=($submitRes.status)"
       }
     }
-		log info $"Exploit for ($service) executed ($message)|" --context { tick: $tick, service: $service, team: $team, ip: $ip, flag_tick: $flagtick, flagid: $flagid } 
+		log info $"Exploit for ($service) executed ($message) |" --context { tick: $tick, service: $service, team: $team, ip: $ip, flag_tick: $flagtick, flagid: $flagid } 
     ($"---stdout ($logname)---\n" + $res.stdout + $"\n---stderr ($logname)---\n" + $res.stderr + "\n---end ($logname)---\n") | save --append ($dir | path join "logs" $"($service).log")
   }
 }
@@ -48,14 +49,32 @@ def run_attacks [] {
 	}
 }
 
-mkdir $dir
-mkdir ($dir | path join exploits)
-mkdir ($dir|path join logs)
-log info $"tick len ($tick_len)" 
-log info "starting thrower, check ~/.nuthrower/logs for logs"
-log info "add exploits to ~/.nuthrower/exploits/SERVICE (must be executable)"
-loop { 
-	run_attacks
-	sleep ($tick_len * 1sec)
+def start_thrower[] {
+	log info $"tick len ($tick_len)" 
+	log info "starting thrower, check ~/.nuthrower/logs for logs"
+	log info "add exploits to ~/.nuthrower/exploits/SERVICE (must be executable)"
+	loop { 
+		run_attacks
+		sleep ($tick_len * 1sec)
+	}
 }
-
+def throw[service: string, file: string] {
+	let dest = ($dir | path join $dir exploits $service)
+	cp $file $dest
+	chmod +x $dest 
+	print $"Successfully threw exploit ($file) for ($service) to ($dest)"
+}
+def main[action: string, arg1?: string, arg2?: string] {
+	mkdir $dir
+	mkdir ($dir | path join exploits)
+	mkdir ($dir | path join logs)
+	match $action {
+		"run" => { start_thrower }
+		"throw" => { throw $arg1 $arg2 }
+		_ => {
+			print "Usage:"
+			print "thrower run -> starts thrower"
+			print "thrower throw [service] [exploit file] -> adds exploit file to thrower"
+		}
+	}
+}
