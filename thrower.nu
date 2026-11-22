@@ -13,7 +13,7 @@ def attack [tick: int, service: string, team: string, ip: string, flagtick: stri
       $message = $"fail tick ($logname)" 
     } else {
       $message = $"ok tick ($logname)" 
-      let flag = $res.stdout | parse -r ("(" + flag_format + ")") | get capture0.0?
+      let flag = $res.stdout | parse -r ("(" + $flag_format + ")") | get capture0.0?
       if $flag == null {
         $message += " no flag"
       } else {
