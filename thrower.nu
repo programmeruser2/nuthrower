@@ -4,7 +4,7 @@ let flag_format = $info.flag_format
 let tick_len = $info.tick_len 
 def attack [tick: int, service: string, team: string, ip: string, flagtick: string, flagid: string] {
   let exploit = $nu.home-dir | path join "nuthrower" "exploits" $service
-  if ($exploit | path exists) and (ls -l /usr/bin/ls | get 0.mode | str contains "x") {
+  if ($exploit | path exists) and (ls -l $exploit | get 0.mode | str contains "x") {
     let res = (^$exploit $ip $flagid | complete)
     let logname = $"tick_($tick)-service_($service)-team_($team)-ip_($ip)-ft_($flagtick)-id_($flagid)"
     mut message = ""
