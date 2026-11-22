@@ -64,10 +64,22 @@ def start_thrower [] {
 	}
 }
 def import_exploit [service: string, file: string] {
-	let dest = ($dir | path join $dir exploits $service)
+	let dest = ($dir | path join exploits $service)
 	cp $file $dest
 	chmod +x $dest 
 	print $"Successfully threw exploit ($file) for ($service) to ($dest)"
+}
+
+def remove_exploit [service: string] {
+	let dest = ($dir | path join exploits $service) 
+	rm $dest 
+	print $"Successfully removed exploit for ($service) from ($dest)"
+}
+
+def test_exploit [service: string, exploit: string] {
+}
+
+def view_logs [target: string] {
 }
 
 # Thrower written in nu-shell
@@ -77,8 +89,16 @@ def main [] {
 }
 
 # Run the thrower 
-def "main run" [] {
-	start_thrower 
+def "main run" [
+	--foreground # Run the thrower in the foreground 
+] {
+	if $foreground {
+		start_thrower 
+	} else {
+		let logfile = ($dir | path join logs nuthrower.log)
+		touch $logfile
+		exec sh -c $"exec setsid -f ($nu.current-exe) ($env.CURRENT_FILE) run --foreground > ($logfile) 2>&1 < /dev/null"
+	}
 }
 
 # Import an exploit script into the thrower (overwrites existing scripts) 
@@ -89,3 +109,24 @@ def "main import" [
 	import_exploit $service $file 
 }
 
+# Remove an exploit from the thrower 
+def "main rm" [ 
+	service: string # The service the exploit is for
+] {
+	remove_exploit $service 
+}
+
+# Test an exploit wtih the NOP team 
+def "main test" [ 
+	service: string, 
+	exploit: string
+] {
+	test_exploit $service $exploit 
+}
+
+# View the logs, either for the thrower itself or for the NOP team 
+def "main logs" [
+	target?: string # The service you want to view the logs for. Leave blank to view the thrower logs 
+] {
+	view_logs $target 
+}
