@@ -16,7 +16,9 @@ def attack [tick: int, service: string, team: string, ip: string, flagtick: stri
       if $flag == null {
         $message += " no flag"
       } else {
-        $message += "flag=" + $flag 
+        $message += "flag=" + $flag + " "
+				let submitRes = ({flags:[$flag]} | http post -t application/json ($url + "/api/submit")).flags|transpose flag code|first|get code
+				$message += $"code=($submitRes.code) status=($submitRes.status)"
       }
     }
     $message += "\n"
