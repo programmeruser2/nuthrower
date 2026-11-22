@@ -50,7 +50,7 @@ def run_attacks [] {
 	}
 }
 
-def start_thrower[] {
+def start_thrower [] {
 	log info $"tick len ($tick_len)" 
 	log info "starting thrower, check ~/.nuthrower/logs for logs"
 	log info "add exploits to ~/.nuthrower/exploits/SERVICE (must be executable)"
@@ -59,7 +59,7 @@ def start_thrower[] {
 		sleep ($tick_len * 1sec)
 	}
 }
-def throw[service: string, file: string] {
+def throw [service: string, file: string] {
 	let dest = ($dir | path join $dir exploits $service)
 	cp $file $dest
 	chmod +x $dest 
