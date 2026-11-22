@@ -1,3 +1,4 @@
+use std/log
 let url = "https://glitch.ad"
 let info = (http get ($url + "/api/info"))
 let flag_format = $info.flag_format
