@@ -1,9 +1,10 @@
 let url = "https://intro.glitch.ad"
 let info = (http get ($url + "/api/info"))
 let flag_format = $info.flag_format
-let tick_len = $info.tick_len 
+let tick_len = $info.tick_len
+let dir = $nu.home-dir | path join ".nuthrower"
 def attack [tick: int, service: string, team: string, ip: string, flagtick: string, flagid: string] {
-  let exploit = $nu.home-dir | path join "nuthrower" "exploits" $service
+  let exploit = $dir | path join "exploits" $service
   if ($exploit | path exists) and (ls -l $exploit | get 0.mode | str contains "x") {
     let res = (^$exploit $ip $flagid | complete)
     let logname = $"tick_($tick)-service_($service)-team_($team)-ip_($ip)-ft_($flagtick)-id_($flagid)"
@@ -22,8 +23,8 @@ def attack [tick: int, service: string, team: string, ip: string, flagtick: stri
       }
     }
     $message += "\n"
-    $message | save --append ~/nuthrower/logs/nuthrower.log 
-    ($"---stdout ($logname)---\n" + $res.stdout + $"\n---stderr ($logname)---\n" + $res.stderr + "\n---end ($logname)---\n") | save --append ($nu.home-dir | path join "nuthrower" "logs" $service ".log")
+    $message | save --append ($dir | path join "logs" "nuthrower.log")
+    ($"---stdout ($logname)---\n" + $res.stdout + $"\n---stderr ($logname)---\n" + $res.stderr + "\n---end ($logname)---\n") | save --append ($dir | path join "logs" $"($service).log")
   }
 }
 def run_attacks [] {
@@ -42,9 +43,9 @@ def run_attacks [] {
 	}
 }
 
-mkdir ~/.nuthrower
-mkdir ~/.nuthrower/exploits
-mkdir ~/.nuthrower/logs
+mkdir $dir
+mkdir ($dir | path join exploits)
+mkdir ($dir|path join logs)
 touch ~/.nuthrower/logs/nuthrower.log
 print $"tick len ($tick_len)" 
 print "starting thrower, check ~/.nuthrower/logs for logs"
